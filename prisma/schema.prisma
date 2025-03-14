@@ -27,3 +27,11 @@ model Media {
   createdAt DateTime @default(now())
 }
 
+model Image {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  filename  String
+  path      String
+  uploadedAt DateTime @default(now())
+}
+
+
