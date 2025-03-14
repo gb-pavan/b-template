@@ -18,3 +18,12 @@ model User {
   username  String
   email String @unique
 }
+
+model Media {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  filename  String
+  path      String
+  type      String // image, video
+  createdAt DateTime @default(now())
+}
+
