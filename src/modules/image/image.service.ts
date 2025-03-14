@@ -9,40 +9,67 @@ import { ObjectId } from 'bson';
 export class ImageService {
   constructor(private prisma: PrismaService) {}
 
-  async uploadImage(file: Express.Multer.File) {
-    try {
-      if (!file || !file.buffer) {
-        throw new BadRequestException('File buffer is empty');
-      }
+  // async uploadImage(file: Express.Multer.File) {
+  //   try {
+  //     if (!file || !file.buffer) {
+  //       throw new BadRequestException('File buffer is empty');
+  //     }
 
-      // 🔥 Fix: Get absolute path safely
-      const baseDir = process.cwd(); // Gets the root directory
-      const uploadDir = join(baseDir, 'uploads'); // Store images in 'uploads/' at project root
-      console.log('Resolved upload directory:', uploadDir);
+  //     // 🔥 Fix: Get absolute path safely
+  //     const baseDir = process.cwd(); // Gets the root directory
+  //     const uploadDir = join(baseDir, 'uploads'); // Store images in 'uploads/' at project root
+  //     console.log('Resolved upload directory:', uploadDir);
 
-      await fs.mkdir(uploadDir, { recursive: true });
+  //     await fs.mkdir(uploadDir, { recursive: true });
 
-      const uploadPath = join(uploadDir, file.originalname);
-      console.log('Saving file to:', uploadPath);
+  //     const uploadPath = join(uploadDir, file.originalname);
+  //     console.log('Saving file to:', uploadPath);
 
-      await fs.writeFile(uploadPath, file.buffer);
+  //     await fs.writeFile(uploadPath, file.buffer);
 
-      // Save image metadata to DB
-      const image = await this.prisma.image.create({
-        data: {
-          filename: file.originalname,
-          path: uploadPath,
-        },
-      });
+  //     // Save image metadata to DB
+  //     const image = await this.prisma.image.create({
+  //       data: {
+  //         filename: file.originalname,
+  //         path: uploadPath,
+  //       },
+  //     });
 
-      console.log('Image uploaded successfully:', image);
+  //     console.log('Image uploaded successfully:', image);
 
-      return { message: 'Image uploaded successfully', image };
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw new InternalServerErrorException('Failed to upload image');
+  //     return { message: 'Image uploaded successfully', image };
+  //   } catch (error) {
+  //     console.error('Error uploading image:', error);
+  //     throw new InternalServerErrorException('Failed to upload image');
+  //   }
+  // }
+
+async uploadImage(file: Express.Multer.File) {
+  try {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('File buffer is empty');
     }
+
+    const uploadDir = join(process.cwd(), 'uploads');
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    const uploadPath = join(uploadDir, file.originalname);
+    await fs.writeFile(uploadPath, file.buffer);
+
+    const image = await this.prisma.image.create({
+      data: {
+        filename: file.originalname,
+        path: uploadPath,
+      },
+    });
+
+    return { message: 'Image uploaded successfully', image };
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw new InternalServerErrorException('Failed to upload image');
   }
+}
+
 
   async getAllImages() {
     return this.prisma.image.findMany();
